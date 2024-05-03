@@ -15,7 +15,7 @@ public class GlobalWatch
     {
 
     }
-    private static Stopwatch stopwatch = new Stopwatch();
+    private static Stopwatch stopwatch = new();
     public static Stopwatch GetWatch()
     {
         return stopwatch;

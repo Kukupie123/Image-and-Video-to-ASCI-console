@@ -17,7 +17,7 @@ public class ConsoleService
     /// It uses delta time to keep time consistent
     /// </summary>
     /// <param name="images"></param>
-    public static void PrintImages(Stack<Bitmap> images)
+    public static void PrintImagesToConsole(Stack<Bitmap> images)
     {
         if (images.Count == 0) //If Stack is empty return
         {
@@ -33,7 +33,7 @@ public class ConsoleService
         double deltaTime = (currentTime - LastFrameTime) / (double)Stopwatch.Frequency;
         LastFrameTime = currentTime;
 
-        const double targetFrameRate = 30;
+        const double targetFrameRate = 15;
         double targetFrameTime = 1.0 / targetFrameRate;
 
         // If the elapsed time is less than the target frame time, wait
@@ -45,14 +45,14 @@ public class ConsoleService
 
         Bitmap Image = images.Peek();
         //Resize the Console to match the image size
-        Console.SetWindowSize(Image.Width + 5, Image.Height + 5);
+        //Console.SetWindowSize(Image.Width + 5, Image.Height + 5);
         PrintImageToConsole(Image);
         images.Pop();
 
         // Move the cursor to the top left corner to overwrite the image on the next frame
 
         // Display the next frame recursively
-        PrintImages(images);
+        PrintImagesToConsole(images);
     }
 
     /// <summary>
@@ -60,34 +60,36 @@ public class ConsoleService
     /// This is slow and needs to be improved
     /// </summary>
     /// <param name="Image"></param>
-    private static void PrintImageToConsole(Bitmap Image)
-    {
-        //TODO: Come up with better logic to print this shit instead of looping per pixel
-        Console.SetCursorPosition(0, 0);
-        for (int y = 0; y < Image.Height; y++)
-        {
-            for (int x = 0; x < Image.Width; x++)
-            {
-                Color c = Image.GetPixel(x, y);
-                Console.Write(GetCharRangeByColor(c));
-            }
 
-            Console.WriteLine("");
+    public static void PrintImageToConsole(Bitmap image)
+    {
+        //Instead of printing every single pixel we instead append string every single pixel. And only print at the end
+        Console.SetCursorPosition(0, 0);
+        StringBuilder sb = new StringBuilder();
+
+        // Calculate aspect ratio to adjust image height
+        double aspectRatio = (double)image.Width / image.Height;
+        int targetHeight = (int)(Console.WindowWidth / aspectRatio);
+        targetHeight = Math.Min(targetHeight, Console.WindowHeight);
+
+        // Resize image to fit console window
+        Bitmap resizedImage = new Bitmap(image, new Size(Console.WindowWidth, targetHeight));
+
+        // Iterate over each pixel in the resized image
+        for (int y = 0; y < resizedImage.Height; y++)
+        {
+            for (int x = 0; x < resizedImage.Width; x++)
+            {
+                Color pixelColor = resizedImage.GetPixel(x, y);
+                char coloredAsciiChar = GetCharRangeByColor(pixelColor);
+                sb.Append(coloredAsciiChar);
+            }
+            sb.AppendLine();
         }
 
+        Console.Write(sb.ToString());
     }
 
-    /// <summary>
-    /// Converts greyscal to a character. This one one converts into binary
-    /// </summary>
-    /// <param name="Color"></param>
-    /// <param name="Threshold"></param>
-    /// <returns></returns>
-    private static char GetCharByColor(Color Color, int Threshold = 20)
-    {
-        int grayValue = (int)(Color.R * 0.3 + Color.G * 0.59 + Color.B * 0.11);
-        return grayValue > Threshold ? '1' : ' ';
-    }
 
     /// <summary>
     /// Converts greyscale into character. This one has a range
@@ -96,36 +98,29 @@ public class ConsoleService
     /// <returns></returns>
     private static char GetCharRangeByColor(Color color)
     {
-        //Some formula used to calculate Greyscale shit idk
+        // Calculate grayscale value
         int grayValue = (int)(color.R * 0.3 + color.G * 0.59 + color.B * 0.11);
 
-        int veryLightThreshold = 200;
-        int lightThreshold = 160;
-        int midThreshold = 120;
-        int darkThreshold = 80;
+        // Define symbols for different shades of gray
+        char[] symbols = {
+        ' ', '.', ',', '-', '~', '+', '*', ':', '=', 'o', 'x', '%', '#', '@', '$',
+        '!', '?', '&', '(', ')', '[', ']', '{', '}', '|', '/', '\\', '<', '>', '^', ';',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '_', '-', '*', '+', '=', '!', '?',
+        '|', '~', '`', '"', '\'', ',', '.', '_', '(', ')', '[', ']', '{', '}', '<', '>', ':', ';', '^', '&', '$', '#', '@', '%'
+    };
 
-        // Determine the shade of gray, Will try to use switch later on
-        if (grayValue > veryLightThreshold)
-        {
-            return ' '; // Very light
-        }
-        else if (grayValue > lightThreshold)
-        {
-            return '@'; // Light
-        }
-        else if (grayValue > midThreshold)
-        {
-            return '#'; // Mid
-        }
-        else if (grayValue > darkThreshold)
-        {
-            return '$'; // Dark
-        }
-        else
-        {
-            return '%'; // Very dark
-        }
+        // Calculate the range for each symbol
+        int numSymbols = symbols.Length;
+        int range = 256 / numSymbols;
+
+        // Determine the index of the symbol based on the grayscale value
+        int index = grayValue / range;
+        index = Math.Min(index, numSymbols - 1);
+
+        // Return the symbol for the corresponding grayscale intensity
+        return symbols[index];
     }
+
 
 
 }
