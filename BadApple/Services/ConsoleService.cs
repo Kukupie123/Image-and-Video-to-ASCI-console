@@ -17,7 +17,7 @@ public class ConsoleService
     /// It uses delta time to keep time consistent
     /// </summary>
     /// <param name="images"></param>
-    public static void PerFrameImage(Stack<Bitmap> images)
+    public static void PrintImages(Stack<Bitmap> images)
     {
         if (images.Count == 0) //If Stack is empty return
         {
@@ -43,14 +43,16 @@ public class ConsoleService
             Task.Delay(delayMilliseconds).Wait(); // Wait in main thread. It's fine.............
         }
 
-
-        PrintImageToConsole(images.Peek());
+        Bitmap Image = images.Peek();
+        //Resize the Console to match the image size
+        Console.SetWindowSize(Image.Width + 5, Image.Height + 5);
+        PrintImageToConsole(Image);
         images.Pop();
 
         // Move the cursor to the top left corner to overwrite the image on the next frame
 
         // Display the next frame recursively
-        PerFrameImage(images);
+        PrintImages(images);
     }
 
     /// <summary>
@@ -124,7 +126,7 @@ public class ConsoleService
             return '%'; // Very dark
         }
     }
-   
+
 
 }
 

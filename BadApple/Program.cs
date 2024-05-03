@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 class Program
 {
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
         /* HIGH LEVEL OVERVIEW
          * 
@@ -25,12 +25,11 @@ class Program
          */
 
         //Maximise the Console to max possible
-        Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
 
         //ImageService.LoadImages all the images from the directory and returns it as a stack
         Stack<Bitmap> images = ImageService.LoadImages("./pics/");
 
         //Main function for drawing, It is a recursive function, meaning it will keep calling itself until the Images Stack is empty
-        ConsoleService.PerFrameImage(images);
+        ConsoleService.PrintImages(images);
     }
 }
