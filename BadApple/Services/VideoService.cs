@@ -56,7 +56,7 @@ public class VideoService
                 // Attempt to parse the FPS value
                 if (double.TryParse(content, out fps))
                 {
-                    return fps;
+                    return MathF.Max((float)(fps - 14), 10);
                 }
             }
         }

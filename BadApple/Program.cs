@@ -85,7 +85,7 @@ class Program
 
         // Print images to console with specified frame rate and reverse option
         Console.Clear();
-        ConsoleService.PrintImagesToConsole(videoImages, new VideoCapture(path).Fps - 14);
+        ConsoleService.PrintImagesToConsole(videoImages, MathF.Max((float)(new VideoCapture(path).Fps - 14), 10));
     }
 
     static void HandleExtractFrames()
