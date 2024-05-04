@@ -16,7 +16,11 @@ public class ImageService
     /// <returns></returns>
     public static Bitmap ConvertImageToGreyscale(Bitmap image)
     {
-        Bitmap imageGreyScale = new Bitmap(image.Width, image.Height);
+        Bitmap imageGreyscale = new Bitmap(image.Width, image.Height);
+
+        // Define parameters for adjusting brightness and contrast
+        double brightness = 0.1; // Adjust this value to change brightness
+        double contrast = 1.5;   // Adjust this value to change contrast
 
         // Iterate over every pixel position
         for (int x = 0; x < image.Width; x++)
@@ -24,19 +28,30 @@ public class ImageService
             for (int y = 0; y < image.Height; y++)
             {
                 Color originalColor = image.GetPixel(x, y);
-                int r = originalColor.R;
-                int g = originalColor.G;
-                int b = originalColor.B;
+                double r = originalColor.R / 255.0; // Normalize to range [0, 1]
+                double g = originalColor.G / 255.0;
+                double b = originalColor.B / 255.0;
 
-                // Calculate greyscale value using weighted average
-                int avg = (int)(0.299 * r + 0.587 * g + 0.114 * b);
+                // Apply gamma correction for each color channel to adjust brightness
+                r = Math.Pow(r, contrast) * brightness;
+                g = Math.Pow(g, contrast) * brightness;
+                b = Math.Pow(b, contrast) * brightness;
 
-                imageGreyScale.SetPixel(x, y, Color.FromArgb(avg, avg, avg)); // Update the pixel color of greyScaleImage 
+                // Ensure values are in valid range [0, 1]
+                r = Math.Max(0, Math.Min(1, r));
+                g = Math.Max(0, Math.Min(1, g));
+                b = Math.Max(0, Math.Min(1, b));
+
+                // Convert back to [0, 255] range
+                int avg = (int)(255 * (0.2126 * r + 0.7152 * g + 0.0722 * b));
+
+                imageGreyscale.SetPixel(x, y, Color.FromArgb(avg, avg, avg)); // Update the pixel color of greyScaleImage 
             }
         }
 
-        return imageGreyScale;
+        return imageGreyscale;
     }
+
 
     public static Stack<Bitmap> ConvertImagesToGreyScale(Stack<Bitmap> Images)
     {
@@ -53,18 +68,24 @@ public class ImageService
     /// </summary>
     /// <param name="FolderPath"></param>
     /// <returns></returns>
-    public static Stack<Bitmap> LoadImages(string FolderPath)
+    public static Stack<Bitmap> LoadImages(string folderPath)
     {
-        Stack<Bitmap> images = new();
-        string[] ImagesRAW = Directory.GetFiles(FolderPath);
-        foreach (var imgRaw in ImagesRAW) 
-        {
-            Bitmap image = new(imgRaw);
-            images.Push(image);
+        Stack<Bitmap> images = new Stack<Bitmap>();
+        string[] imagePaths = Directory.GetFiles(folderPath);
 
+        // Sort the image file paths based on their names
+        Array.Sort(imagePaths, StringComparer.InvariantCulture);
+
+        foreach (var imagePath in imagePaths)
+        {
+            Bitmap image = new Bitmap(imagePath);
+            images.Push(image);
         }
+
         return images;
     }
+
+
 
 
 }

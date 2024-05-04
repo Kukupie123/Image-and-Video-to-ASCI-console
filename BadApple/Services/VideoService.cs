@@ -7,6 +7,7 @@ using System.IO;
 public class VideoService
 {
 
+    //Generates images from videos and prints them directly
     public static Stack<Bitmap> GenerateImagesFromVideo(string videoFilePath, System.Drawing.Size resize)
     {
         // Define preprocess function to resize the frame
@@ -20,22 +21,56 @@ public class VideoService
         return LoadImagesFromVideo(videoFilePath, preprocess);
     }
 
+    //Extracts images of video per frame in given output with given size
     public static void ExtractImagesFromVideo(string videoFilePath, string outputFolderPath, System.Drawing.Size resizeSize)
     {
-        // Define preprocess function to resize the frame
-        Func<Mat, Mat> preprocess = (frame) =>
-        {
-            Mat resizedFrame = new Mat();
-            Cv2.Resize(frame, resizedFrame, new OpenCvSharp.Size(resizeSize.Width, resizeSize.Height));
-            return resizedFrame;
-        };
 
         // Call the common function to load images from video
-        var images = LoadImagesFromVideo(videoFilePath, preprocess);
+        var images = GenerateImagesFromVideo(videoFilePath, resizeSize);
 
         // Save the images to the output folder
         SaveImages(images, outputFolderPath);
+
+        // Construct the file path for the FPS file
+        string parentFolderPath = Directory.GetParent(outputFolderPath)?.FullName ?? throw new ArgumentNullException("Parent folder path cannot be null.");
+        string fpsFilePath = Path.Combine(parentFolderPath, "fps.txt");
+
+        // Save the FPS information to the FPS file
+        File.WriteAllText(fpsFilePath, (new VideoCapture(videoFilePath).Fps - 14).ToString());
+
     }
+
+    public static double GetFPSofExportedFrames(string outputFolderPath)
+    {
+        double fps = 0.0;
+
+        // Get the parent folder path
+        string parentFolderPath = Directory.GetParent(outputFolderPath).FullName;
+
+        if (parentFolderPath != null)
+        {
+            // Construct the file path for the FPS file in the parent folder
+            string fpsFilePath = Path.Combine(parentFolderPath, "fps.txt");
+
+            // Check if the FPS file exists
+            if (File.Exists(fpsFilePath))
+            {
+                // Read the FPS file content
+                string content = File.ReadAllText(fpsFilePath);
+
+                // Attempt to parse the FPS value
+                if (double.TryParse(content, out fps))
+                {
+                    return fps;
+                }
+            }
+        }
+
+        return fps;
+    }
+
+
+
 
     private static void SaveImages(Stack<Bitmap> images, string outputFolderPath)
     {
@@ -85,8 +120,10 @@ public class VideoService
                 // Convert the OpenCV Mat to a bitmap
                 Bitmap bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(frame);
 
+                var greyImg = ImageService.ConvertImageToGreyscale(bitmap);
+
                 // Push the bitmap image onto the stack
-                images.Push(bitmap);
+                images.Push(greyImg);
             }
         }
 

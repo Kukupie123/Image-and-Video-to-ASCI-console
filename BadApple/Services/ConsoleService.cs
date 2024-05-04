@@ -2,78 +2,66 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 public class ConsoleService
 {
-
-    static long LastFrameTime = -1; //Used to keep track of the last time an image was Printed
+    static long LastFrameTime = -1; // Used to keep track of the last time an image was printed
 
     /// <summary>
     /// Iterates and prints Images one by one until all images have been shown.
     /// It uses delta time to keep time consistent
     /// </summary>
-    /// <param name="images"></param>
-    public static void PrintImagesToConsole(Stack<Bitmap> images)
+    /// <param name="frames">A stack containing the frames to be printed</param>
+    /// <param name="targetFrameRate">The target frame rate in frames per second</param>
+    /// <param name="reverse">Boolean indicating whether frames should be printed in reverse order</param>
+    public static void PrintImagesToConsole(Stack<Bitmap> frames, double targetFrameRate)
     {
-        if (images.Count == 0) //If Stack is empty return
+
+        if (frames.Count == 0) // If Stack is empty, return
         {
             return;
         }
 
-        // Calculate delta.
-        // Pretty sure this is wrong.
-        // We do not skip frames incase of severe time difference.
-        // Not  necessary for small images but  will make video with large images go out of sync fast.
-        // We will have to skip images in such scenarios to stay in sync.
+        // Calculate delta time
         long currentTime = Stopwatch.GetTimestamp();
         double deltaTime = (currentTime - LastFrameTime) / (double)Stopwatch.Frequency;
         LastFrameTime = currentTime;
 
-        const double targetFrameRate = 15;
         double targetFrameTime = 1.0 / targetFrameRate;
 
         // If the elapsed time is less than the target frame time, wait
         if (deltaTime < targetFrameTime)
         {
             int delayMilliseconds = (int)((targetFrameTime - deltaTime) * 1000);
-            Task.Delay(delayMilliseconds).Wait(); // Wait in main thread. It's fine.............
+            Task.Delay(delayMilliseconds).Wait(); // Wait in main thread
         }
 
-        Bitmap Image = images.Peek();
-        //Resize the Console to match the image size
-        //Console.SetWindowSize(Image.Width + 5, Image.Height + 5);
-        PrintImageToConsole(Image);
-        images.Pop();
-
-        // Move the cursor to the top left corner to overwrite the image on the next frame
+        Bitmap frame = frames.Peek();
+        frames.Pop();
+        PrintImageToConsole(frame);
 
         // Display the next frame recursively
-        PrintImagesToConsole(images);
+        PrintImagesToConsole(frames, targetFrameRate);
     }
 
     /// <summary>
-    /// Prints to console starting from the top most.
-    /// This is slow and needs to be improved
+    /// Prints a single frame to the console
     /// </summary>
-    /// <param name="Image"></param>
-
-    public static void PrintImageToConsole(Bitmap image)
+    /// <param name="frame">The frame to be printed</param>
+    public static void PrintImageToConsole(Bitmap frame)
     {
-        //Instead of printing every single pixel we instead append string every single pixel. And only print at the end
-        Console.SetCursorPosition(0, 0);
-        StringBuilder sb = new StringBuilder();
-
         // Calculate aspect ratio to adjust image height
-        double aspectRatio = (double)image.Width / image.Height;
+        double aspectRatio = (double)frame.Width / frame.Height;
         int targetHeight = (int)(Console.WindowWidth / aspectRatio);
         targetHeight = Math.Min(targetHeight, Console.WindowHeight);
 
         // Resize image to fit console window
-        Bitmap resizedImage = new Bitmap(image, new Size(Console.WindowWidth, targetHeight));
+        Bitmap resizedImage = new Bitmap(frame, new Size(Console.WindowWidth, targetHeight));
+
+        // Instead of printing every single pixel, append string for each pixel and print at the end
+        StringBuilder sb = new StringBuilder();
 
         // Iterate over each pixel in the resized image
         for (int y = 0; y < resizedImage.Height; y++)
@@ -87,15 +75,15 @@ public class ConsoleService
             sb.AppendLine();
         }
 
+        Console.SetCursorPosition(0, 0);
         Console.Write(sb.ToString());
     }
 
-
     /// <summary>
-    /// Converts greyscale into character. This one has a range
+    /// Converts greyscale into character using a range
     /// </summary>
-    /// <param name="color"></param>
-    /// <returns></returns>
+    /// <param name="color">The color to be converted</param>
+    /// <returns>Character representation of the color</returns>
     private static char GetCharRangeByColor(Color color)
     {
         // Calculate grayscale value
@@ -103,11 +91,11 @@ public class ConsoleService
 
         // Define symbols for different shades of gray
         char[] symbols = {
-        ' ', '.', ',', '-', '~', '+', '*', ':', '=', 'o', 'x', '%', '#', '@', '$',
-        '!', '?', '&', '(', ')', '[', ']', '{', '}', '|', '/', '\\', '<', '>', '^', ';',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '_', '-', '*', '+', '=', '!', '?',
-        '|', '~', '`', '"', '\'', ',', '.', '_', '(', ')', '[', ']', '{', '}', '<', '>', ':', ';', '^', '&', '$', '#', '@', '%'
-    };
+            ' ', '.', ',', '-', '~', '+', '*', ':', '=', 'o', 'x', '%', '#', '@', '$',
+            '!', '?', '&', '(', ')', '[', ']', '{', '}', '|', '/', '\\', '<', '>', '^', ';',
+            '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '_', '-', '*', '+', '=', '!', '?',
+            '|', '~', '`', '"', '\'', ',', '.', '_', '(', ')', '[', ']', '{', '}', '<', '>', ':', ';', '^', '&', '$', '#', '@', '%'
+        };
 
         // Calculate the range for each symbol
         int numSymbols = symbols.Length;
@@ -120,8 +108,4 @@ public class ConsoleService
         // Return the symbol for the corresponding grayscale intensity
         return symbols[index];
     }
-
-
-
 }
-
