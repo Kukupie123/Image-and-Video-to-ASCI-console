@@ -1,53 +1,45 @@
-﻿using OpenCvSharp.Extensions;
-using OpenCvSharp;
+﻿using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using System.IO;
 
 public class ImageService
 {
-
     /// <summary>
-    /// Returns a Greyscale image by calculating the average
-    /// THIS IS SOOOO SLOWWWWW
+    /// Converts a given image to greyscale using OpenCV.
     /// </summary>
-    /// <param name="Image"></param>
-    /// <returns></returns>
+    /// <param name="image">The input image.</param>
+    /// <returns>The greyscale version of the input image.</returns>
     public static Bitmap ConvertImageToGreyscale(Bitmap image)
     {
-        // Convert Bitmap to Mat (OpenCV format)
         Mat src = BitmapConverter.ToMat(image);
-
-        // Convert the image to grayscale
         Mat gray = new Mat();
         Cv2.CvtColor(src, gray, ColorConversionCodes.BGR2GRAY);
-
-        // Convert Mat back to Bitmap
-        Bitmap result = BitmapConverter.ToBitmap(gray);
-
-        return result;
-    }
-
-
-    public static Stack<Bitmap> ConvertImagesToGreyScale(Stack<Bitmap> Images)
-    {
-        var greyImg = new Stack<Bitmap>();
-        foreach (Bitmap Image in Images)
-        {
-            greyImg.Push(ConvertImageToGreyscale(Image));
-        }
-        return greyImg;
+        return BitmapConverter.ToBitmap(gray);
     }
 
     /// <summary>
-    /// Loads all the images in the given path. Make sure that the folder has ONLY images
+    /// Converts a stack of images to greyscale using OpenCV.
     /// </summary>
-    /// <param name="FolderPath"></param>
-    /// <returns></returns>
+    /// <param name="images">The stack of input images.</param>
+    /// <returns>A stack of greyscale images.</returns>
+    public static Stack<Bitmap> ConvertImagesToGreyscale(Stack<Bitmap> images)
+    {
+        Stack<Bitmap> greyImages = new Stack<Bitmap>();
+        foreach (Bitmap image in images)
+        {
+            greyImages.Push(ConvertImageToGreyscale(image));
+        }
+        return greyImages;
+    }
+
+    /// <summary>
+    /// Loads all the images in the given folder path.
+    /// </summary>
+    /// <param name="folderPath">The path to the folder containing images.</param>
+    /// <returns>A stack of loaded images.</returns>
     public static Stack<Bitmap> LoadImages(string folderPath)
     {
         Stack<Bitmap> images = new Stack<Bitmap>();
@@ -64,9 +56,4 @@ public class ImageService
 
         return images;
     }
-
-
-
-
 }
-

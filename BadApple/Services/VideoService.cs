@@ -101,28 +101,18 @@ public class VideoService
                 return images;
             }
 
-            // Adjust decoding parameters for speed (optional)
-            videoCapture.Set(VideoCaptureProperties.Fps, 30); // Set desired frame rate
-            videoCapture.Set(VideoCaptureProperties.FrameHeight, 100); // Set desired frame height
-            videoCapture.Set(VideoCaptureProperties.FrameWidth, 100); // Set desired frame width
-
-            // Frame skipping (optional)
-            int frameSkip = 0; // Skip every nth frame
             int frameCount = 0;
 
             // Loop through each frame of the video
             Mat frame = new Mat();
             while (videoCapture.Read(frame))
             {
-                // Apply frame skipping
-                
-
                 // Convert the OpenCV Mat to a bitmap
                 Bitmap bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(frame);
 
                 var greyImg = ImageService.ConvertImageToGreyscale(bitmap);
 
-                // Push the bitmap image onto the stack
+                // Insert the bitmap image at the beginning of the stack
                 images.Push(bitmap);
                 Console.WriteLine("Added Bitmap " + frameCount);
 
@@ -130,8 +120,12 @@ public class VideoService
             }
         }
 
+        // Reverse the order of frames in the stack
+        images = new Stack<Bitmap>(images);
+
         return images;
     }
+
 
 
 
