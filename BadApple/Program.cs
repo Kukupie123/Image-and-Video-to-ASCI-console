@@ -77,11 +77,8 @@ class Program
             path = "./video.mp4";
         }
 
-        // Ask for the size
-        System.Drawing.Size size1 = GetImageSize();
-
         // Generate images from the video
-        var videoImages = VideoService.GenerateImagesFromVideo(path, size1);
+        var videoImages = VideoService.GenerateImagesFromVideo(path);
 
         // Print images to console with specified frame rate and reverse option
         ConsoleService.PrintImagesToConsole(videoImages, new VideoCapture(path).Fps - 14);
@@ -109,11 +106,8 @@ class Program
             outputFolderPath = "./exportedFrames";
         }
 
-        // Ask for the size
-        System.Drawing.Size size2 = GetImageSize();
-
         // Extract frames from the video
-        VideoService.ExtractImagesFromVideo(videoFilePath, outputFolderPath, size2);
+        VideoService.ExtractImagesFromVideo(videoFilePath, outputFolderPath);
     }
 
     static void HandleLoadImages()

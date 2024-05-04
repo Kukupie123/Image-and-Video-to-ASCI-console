@@ -54,11 +54,20 @@ public class ConsoleService
     {
         // Calculate aspect ratio to adjust image height
         double aspectRatio = (double)frame.Width / frame.Height;
-        int targetHeight = (int)(Console.WindowWidth / aspectRatio);
-        targetHeight = Math.Min(targetHeight, Console.WindowHeight);
+
+        // Calculate target width and height to fit the console window
+        int targetWidth = Console.WindowWidth;
+        int targetHeight = (int)(targetWidth / aspectRatio);
+
+        // If the calculated height is greater than the console height, resize based on console height
+        if (targetHeight > Console.WindowHeight)
+        {
+            targetHeight = Console.WindowHeight;
+            targetWidth = (int)(targetHeight * aspectRatio);
+        }
 
         // Resize image to fit console window
-        Bitmap resizedImage = new Bitmap(frame, new Size(Console.WindowWidth, targetHeight));
+        Bitmap resizedImage = new Bitmap(frame, new Size(targetWidth, targetHeight));
 
         // Instead of printing every single pixel, append string for each pixel and print at the end
         StringBuilder sb = new StringBuilder();
@@ -79,6 +88,7 @@ public class ConsoleService
         Console.Write(sb.ToString());
     }
 
+
     /// <summary>
     /// Converts greyscale into character using a range
     /// </summary>
@@ -89,23 +99,13 @@ public class ConsoleService
         // Calculate grayscale value
         int grayValue = (int)(color.R * 0.3 + color.G * 0.59 + color.B * 0.11);
 
-        // Define symbols for different shades of gray
-        char[] symbols = {
-            ' ', '.', ',', '-', '~', '+', '*', ':', '=', 'o', 'x', '%', '#', '@', '$',
-            '!', '?', '&', '(', ')', '[', ']', '{', '}', '|', '/', '\\', '<', '>', '^', ';',
-            '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '_', '-', '*', '+', '=', '!', '?',
-            '|', '~', '`', '"', '\'', ',', '.', '_', '(', ')', '[', ']', '{', '}', '<', '>', ':', ';', '^', '&', '$', '#', '@', '%'
-        };
+        // Define symbols for different shades of gray (from dark to light)
+        char[] symbols = { ' ', '.', ',', ':', '!', 'i', 'I', 'o', 'O', '*', '#', '@' };
 
-        // Calculate the range for each symbol
-        int numSymbols = symbols.Length;
-        int range = 256 / numSymbols;
+        // Calculate the index based on brightness
+        int index = (grayValue * (symbols.Length - 1)) / 255;
 
-        // Determine the index of the symbol based on the grayscale value
-        int index = grayValue / range;
-        index = Math.Min(index, numSymbols - 1);
-
-        // Return the symbol for the corresponding grayscale intensity
+        // Return the symbol for the corresponding brightness level
         return symbols[index];
     }
 }

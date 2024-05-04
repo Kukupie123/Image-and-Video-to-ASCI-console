@@ -8,25 +8,19 @@ public class VideoService
 {
 
     //Generates images from videos and prints them directly
-    public static Stack<Bitmap> GenerateImagesFromVideo(string videoFilePath, System.Drawing.Size resize)
+    public static Stack<Bitmap> GenerateImagesFromVideo(string videoFilePath)
     {
-        // Define preprocess function to resize the frame
-        Func<Mat, Mat> preprocess = (frame) =>
-        {
-            Mat resizedFrame = new Mat();
-            Cv2.Resize(frame, resizedFrame, new OpenCvSharp.Size(resize.Width, resize.Height));
-            return resizedFrame;
-        };
 
-        return LoadImagesFromVideo(videoFilePath, preprocess);
+
+        return LoadImagesFromVideo(videoFilePath);
     }
 
     //Extracts images of video per frame in given output with given size
-    public static void ExtractImagesFromVideo(string videoFilePath, string outputFolderPath, System.Drawing.Size resizeSize)
+    public static void ExtractImagesFromVideo(string videoFilePath, string outputFolderPath)
     {
 
         // Call the common function to load images from video
-        var images = GenerateImagesFromVideo(videoFilePath, resizeSize);
+        var images = GenerateImagesFromVideo(videoFilePath);
 
         // Save the images to the output folder
         SaveImages(images, outputFolderPath);
@@ -94,7 +88,7 @@ public class VideoService
         }
     }
 
-    private static Stack<Bitmap> LoadImagesFromVideo(string videoFilePath, Func<Mat, Mat> preprocess)
+    private static Stack<Bitmap> LoadImagesFromVideo(string videoFilePath)
     {
         Stack<Bitmap> images = new Stack<Bitmap>();
 
@@ -107,15 +101,21 @@ public class VideoService
                 return images;
             }
 
+            // Adjust decoding parameters for speed (optional)
+            videoCapture.Set(VideoCaptureProperties.Fps, 30); // Set desired frame rate
+            videoCapture.Set(VideoCaptureProperties.FrameHeight, 100); // Set desired frame height
+            videoCapture.Set(VideoCaptureProperties.FrameWidth, 100); // Set desired frame width
+
+            // Frame skipping (optional)
+            int frameSkip = 0; // Skip every nth frame
+            int frameCount = 0;
+
             // Loop through each frame of the video
             Mat frame = new Mat();
             while (videoCapture.Read(frame))
             {
-                // Preprocess the frame if needed
-                if (preprocess != null)
-                {
-                    frame = preprocess(frame);
-                }
+                // Apply frame skipping
+                
 
                 // Convert the OpenCV Mat to a bitmap
                 Bitmap bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(frame);
@@ -123,11 +123,16 @@ public class VideoService
                 var greyImg = ImageService.ConvertImageToGreyscale(bitmap);
 
                 // Push the bitmap image onto the stack
-                images.Push(greyImg);
+                images.Push(bitmap);
+                Console.WriteLine("Added Bitmap " + frameCount);
+
+                frameCount++;
             }
         }
 
         return images;
     }
+
+
 
 }
