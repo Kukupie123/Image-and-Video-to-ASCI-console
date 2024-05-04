@@ -48,12 +48,17 @@ public class ImageService
         // Sort the image file paths based on their names
         Array.Sort(imagePaths, StringComparer.InvariantCulture);
 
+        // Reverse the sorted image paths to load images in correct order
+        Array.Reverse(imagePaths);
+
         foreach (var imagePath in imagePaths)
         {
+            Console.WriteLine("Loading " + imagePath);
             Bitmap image = new Bitmap(imagePath);
             images.Push(image);
         }
 
         return images;
     }
+
 }
