@@ -77,8 +77,11 @@ class Program
             path = "./video.mp4";
         }
 
+        // Ask for image size
+        System.Drawing.Size imageSize = GetImageSize();
+
         // Generate images from the video
-        var videoImages = VideoService.GenerateImagesFromVideo(path);
+        var videoImages = VideoService.GenerateImagesFromVideo(path, new OpenCvSharp.Size(imageSize.Width, imageSize.Height));
 
         // Print images to console with specified frame rate and reverse option
         ConsoleService.PrintImagesToConsole(videoImages, new VideoCapture(path).Fps - 14);
@@ -106,9 +109,36 @@ class Program
             outputFolderPath = "./exportedFrames";
         }
 
+        // Ask for image size
+        System.Drawing.Size imageSize = GetImageSize();
+
         // Extract frames from the video
-        VideoService.ExtractImagesFromVideo(videoFilePath, outputFolderPath);
+        VideoService.ExtractImagesFromVideo(videoFilePath, outputFolderPath, new OpenCvSharp.Size(imageSize.Width, imageSize.Height));
     }
+
+    static System.Drawing.Size GetImageSize()
+    {
+        int width = 200;
+        int height = 200;
+
+        // Ask for the size and validate input
+        Console.WriteLine("Enter the width of the resized images (default: 200):");
+        string widthInput = Console.ReadLine();
+        if (!string.IsNullOrEmpty(widthInput) && int.TryParse(widthInput, out int parsedWidth) && parsedWidth > 0)
+        {
+            width = parsedWidth;
+        }
+
+        Console.WriteLine("Enter the height of the resized images (default: 200):");
+        string heightInput = Console.ReadLine();
+        if (!string.IsNullOrEmpty(heightInput) && int.TryParse(heightInput, out int parsedHeight) && parsedHeight > 0)
+        {
+            height = parsedHeight;
+        }
+
+        return new System.Drawing.Size(width, height);
+    }
+
 
     static void HandleLoadImages()
     {
@@ -161,26 +191,4 @@ class Program
 
     }
 
-    static System.Drawing.Size GetImageSize()
-    {
-        int width = 200;
-        int height = 200;
-
-        // Ask for the size and validate input
-        Console.WriteLine("Enter the width of the resized images (default: 200):");
-        string widthInput = Console.ReadLine();
-        if (!string.IsNullOrEmpty(widthInput) && int.TryParse(widthInput, out int parsedWidth) && parsedWidth > 0)
-        {
-            width = parsedWidth;
-        }
-
-        Console.WriteLine("Enter the height of the resized images (default: 200):");
-        string heightInput = Console.ReadLine();
-        if (!string.IsNullOrEmpty(heightInput) && int.TryParse(heightInput, out int parsedHeight) && parsedHeight > 0)
-        {
-            height = parsedHeight;
-        }
-
-        return new System.Drawing.Size(width, height);
-    }
 }

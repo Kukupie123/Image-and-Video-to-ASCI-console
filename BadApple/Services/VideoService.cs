@@ -1,4 +1,5 @@
 ﻿using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -8,19 +9,19 @@ public class VideoService
 {
 
     //Generates images from videos and prints them directly
-    public static Stack<Bitmap> GenerateImagesFromVideo(string videoFilePath)
+    public static Stack<Bitmap> GenerateImagesFromVideo(string videoFilePath, OpenCvSharp.Size size)
     {
 
 
-        return LoadImagesFromVideo(videoFilePath);
+        return LoadImagesFromVideo(videoFilePath, size);
     }
 
     //Extracts images of video per frame in given output with given size
-    public static void ExtractImagesFromVideo(string videoFilePath, string outputFolderPath)
+    public static void ExtractImagesFromVideo(string videoFilePath, string outputFolderPath, OpenCvSharp.Size size)
     {
 
         // Call the common function to load images from video
-        var images = GenerateImagesFromVideo(videoFilePath);
+        var images = GenerateImagesFromVideo(videoFilePath, size);
 
         // Save the images to the output folder
         SaveImages(images, outputFolderPath);
@@ -89,7 +90,7 @@ public class VideoService
         }
     }
 
-    private static Stack<Bitmap> LoadImagesFromVideo(string videoFilePath)
+    private static Stack<Bitmap> LoadImagesFromVideo(string videoFilePath, OpenCvSharp.Size newSize)
     {
         Stack<Bitmap> images = new Stack<Bitmap>();
 
@@ -108,23 +109,34 @@ public class VideoService
             Mat frame = new Mat();
             while (videoCapture.Read(frame))
             {
-                // Convert the OpenCV Mat to a bitmap
-                Bitmap bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(frame);
+                // Resize the frame
+                Cv2.Resize(frame, frame, newSize);
 
-                var greyImg = ImageService.ConvertImageToGreyscale(bitmap);
+                // Convert the frame to greyscale
+                Cv2.CvtColor(frame, frame, ColorConversionCodes.RGBA2GRAY);
+
+                // Convert the OpenCV Mat to a bitmap
+                Bitmap bitmap = BitmapConverter.ToBitmap(frame);
 
                 // Insert the bitmap image at the beginning of the stack
-                images.Push(greyImg);
+                images.Push(bitmap);
                 Console.WriteLine("Added Bitmap " + frameCount);
 
                 frameCount++;
             }
         }
 
-        images = new Stack<Bitmap>(images); //IDK why this works 
+        // Reversing the stack to maintain the original order of frames
+        Stack<Bitmap> reversedImages = new Stack<Bitmap>(images.Count);
+        while (images.Count > 0)
+        {
+            reversedImages.Push(images.Pop());
+        }
 
-        return images;
+        return reversedImages;
     }
+
+
 
 
 
