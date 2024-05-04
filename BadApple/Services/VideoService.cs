@@ -81,6 +81,7 @@ public class VideoService
         int frameNumber = 0;
         foreach (var bitmap in images)
         {
+            Console.WriteLine("Saving Frame number " + frameNumber);
             // Save the bitmap image as a file
             string outputFilePath = Path.Combine(outputFolderPath, $"frame_{frameNumber:D6}.jpg");
             bitmap.Save(outputFilePath);
