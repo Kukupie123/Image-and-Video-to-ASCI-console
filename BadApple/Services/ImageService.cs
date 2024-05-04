@@ -16,7 +16,7 @@ public class ImageService
     {
         Mat src = BitmapConverter.ToMat(image);
         Mat gray = new Mat();
-        Cv2.CvtColor(src, gray, ColorConversionCodes.BGR2GRAY);
+        Cv2.CvtColor(src, gray, ColorConversionCodes.RGBA2GRAY);
         return BitmapConverter.ToBitmap(gray);
     }
 

@@ -113,15 +113,14 @@ public class VideoService
                 var greyImg = ImageService.ConvertImageToGreyscale(bitmap);
 
                 // Insert the bitmap image at the beginning of the stack
-                images.Push(bitmap);
+                images.Push(greyImg);
                 Console.WriteLine("Added Bitmap " + frameCount);
 
                 frameCount++;
             }
         }
 
-        // Reverse the order of frames in the stack
-        images = new Stack<Bitmap>(images);
+        images = new Stack<Bitmap>(images); //IDK why this works 
 
         return images;
     }
