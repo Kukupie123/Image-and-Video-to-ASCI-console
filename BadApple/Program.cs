@@ -84,6 +84,7 @@ class Program
         var videoImages = VideoService.GenerateImagesFromVideo(path, new OpenCvSharp.Size(imageSize.Width, imageSize.Height));
 
         // Print images to console with specified frame rate and reverse option
+        Console.Clear();
         ConsoleService.PrintImagesToConsole(videoImages, new VideoCapture(path).Fps - 14);
     }
 
@@ -156,6 +157,7 @@ class Program
         var images = ImageService.LoadImages(folderPath);
 
         // Print the grayscale images to the console with the specified frame rate and reverse option
+        Console.Clear();
         ConsoleService.PrintImagesToConsole(images, VideoService.GetFPSofExportedFrames(folderPath));
     }
 
